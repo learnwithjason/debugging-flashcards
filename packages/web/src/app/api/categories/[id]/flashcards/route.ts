@@ -23,8 +23,11 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   }
   const flashcards = (await flashcardsRes.json()).results.flashcards;
 
+  // Ensure flashcards is always an array
+  const safeFlashcards = Array.isArray(flashcards) ? flashcards : [];
+
   return Response.json({
     category,
-    flashcards,
+    flashcards: safeFlashcards,
   });
 }
