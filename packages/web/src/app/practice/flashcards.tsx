@@ -33,7 +33,22 @@ export default function Flashcards({ category }: { category: Category }) {
     },
   });
 
+
   const flashcards = data as Flashcard[];
+
+  // Early return if no flashcards
+  if (!flashcards || flashcards.length === 0) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>No Flashcards Available</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>There are no flashcards available for this category yet.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const displayedFlashcards = useMemo(
     () => shuffleArray(flashcards),
@@ -42,28 +57,38 @@ export default function Flashcards({ category }: { category: Category }) {
   const [step, setStep] = useState(0);
 
   const nextStep = () => {
-    if (step === displayedFlashcards.length - 1) {
+    if (!displayedFlashcards || displayedFlashcards.length === 0) {
+      return;
+    }
+    
+    if (step >= displayedFlashcards.length - 1) {
       setStep(0);
       return;
     }
-    setStep((s) => s + 1);
+    setStep((s) => Math.min(s + 1, displayedFlashcards.length - 1));
   };
 
   useEffect(() => {
     setStep(0);
   }, [category]);
 
+  // Add safety check for current flashcard
+  const currentFlashcard = displayedFlashcards[step];
+  if (!currentFlashcard) {
+    return null;
+  }
+
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>{displayedFlashcards[step].question}</CardTitle>
+        <CardTitle>{currentFlashcard.question}</CardTitle>
       </CardHeader>
       <CardContent>
         <Accordion type="single" collapsible>
-          <AccordionItem value={displayedFlashcards[step].slug}>
+          <AccordionItem value={currentFlashcard.slug}>
             <AccordionTrigger>Reveal answer</AccordionTrigger>
             <AccordionContent>
-              {displayedFlashcards[step].answer}
+              {currentFlashcard.answer}
             </AccordionContent>
           </AccordionItem>
         </Accordion>
